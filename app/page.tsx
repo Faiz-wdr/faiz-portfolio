@@ -71,7 +71,10 @@ export default function Home() {
           </p>
           <p className="hero-desc">
             Always exploring new ideas and{" "}
-            <span className="highlight">open to collaborating</span> on meaningful products.
+            <Link href="/contact" className="highlight">
+              open to collaborating
+            </Link>{" "}
+            on meaningful products.
           </p>
         </section>
 
