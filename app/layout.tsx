@@ -58,6 +58,7 @@ export const metadata: Metadata = {
     "Interaction Design",
     "Design Systems",
     "Frontend Engineering",
+    "Web Design",
   ],
   icons: {
     icon: [
@@ -88,6 +89,12 @@ export const metadata: Metadata = {
     title: "Faiz Rahim | Product Designer & Frontend Developer",
     description: "Designing and building products that solve real problems with simple, intuitive experiences.",
     images: ["/og-image.png"],
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    other: {
+      "msvalidate.01": [process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || ""],
+    },
   },
 };
 

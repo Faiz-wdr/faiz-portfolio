@@ -24,11 +24,12 @@ export default function Home() {
     "name": "Faiz Rahim",
     "jobTitle": "Product Designer & Frontend Developer",
     "url": SITE_URL,
+    "email": "kappil.faiz@gmail.com",
     "image": `${SITE_URL}/Icon.png`,
     "description": "Portfolio of Faiz Rahim, a Product Designer and Frontend Developer creating thoughtful digital products and user experiences.",
     "sameAs": [
-      "https://linkedin.com/in/mohammedfaizk",
-      "https://github.com/Faiz-wdr"
+      "https://github.com/Faiz-wdr",
+      "https://www.linkedin.com/in/mohammedfaizk/"
     ]
   };
 
