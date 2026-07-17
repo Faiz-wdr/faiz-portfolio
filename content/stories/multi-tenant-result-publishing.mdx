@@ -1,0 +1,155 @@
+---
+title: Building a Result Poster Generator for Live Arts Events
+slug: multi-tenant-result-publishing
+description: replaced repetitive Photoshop work with an automated result publishing platform for competition arts festival.
+category: Engineering
+publishedDate: 2026-06-12
+coverImage: ""
+tags:
+  - SaaS
+  - Automation
+  - Web App
+  - UI/UX
+  - React
+---
+
+
+This year, I was one of the program coordinators for a two-day arts festival with **120+ competitions**.
+
+My primary responsibilities were:
+
+- Coordinating the media team
+- Managing the competition schedule
+
+One recurring challenge stood out.
+
+Every time a result was announced on stage, the media team had to manually edit a poster in Photoshop, export it, and publish it immediately.
+
+While it sounds straightforward, repeating the process **120+ times** created unnecessary pressure and increased the chances of mistakes.
+
+---
+
+## The Problem
+
+| Challenge | Impact |
+|-----------|--------|
+| Manual poster editing | Time consuming |
+| Repeated design work | Reduced productivity |
+| Typing mistakes | Incorrect published results |
+| Layout inconsistencies | Poor visual quality |
+| Delayed publishing | Frustrated participants & audience |
+
+> **The problem wasn't design. It was workflow.**
+
+---
+
+## The Idea
+
+Instead of creating every poster manually, I built a platform where the operator only enters:
+
+- Program Name
+- Category
+- Winner Details
+
+Everything else is generated automatically.
+
+---
+
+## Key Features
+
+- Instant result publishing
+- Dynamic poster generation
+- Multiple poster templates
+- Live poster preview
+- Responsive dashboard
+- Category-wise result filtering
+- High-quality poster downloads
+- Support for tied winners and flexible rankings
+
+---
+
+## Layout Editor
+
+One of the biggest improvements was the **Layout Editor**.
+
+Instead of editing Photoshop files repeatedly, administrators configure a template once by positioning dynamic fields like program name, category, and winner section.
+
+Every future poster automatically follows the saved layout.
+![Poster Layout Editor](/assets/layout.png)
+
+
+---
+
+## Technical Stack
+
+| Technology | Purpose |
+|------------|---------|
+| React | Frontend |
+| Vite | Development & Build |
+| Supabase | Database & Storage |
+| Vercel | Hosting |
+| HTML-to-Image | Poster Export |
+
+---
+
+## Challenges
+
+Some competitions don't follow a simple structure.
+
+Examples include:
+
+- Two First Place winners
+- Multiple Second Place winners
+- Missing Third Place
+- Long participant or team names
+
+To solve this, I designed a **dynamic winner section** instead of fixed First, Second, and Third placeholders.
+
+This keeps every template flexible without breaking the layout.
+
+---
+
+## Result
+
+The platform significantly simplified the publishing workflow.
+
+Instead of spending time editing posters repeatedly, the media team could focus on verifying results and publishing them immediately.
+
+The outcome was:
+
+- Faster publishing
+- Consistent poster quality
+- Fewer manual errors
+- Reduced workload during live events
+
+---
+
+## Live Demo
+
+Project: **[View App »](https://sahityotsav-results.vercel.app/)**
+
+---
+
+## What's Next?
+
+This project solved one major operational problem.
+
+The second challenge was creating and managing the complete schedule for **120+ competitions** across two days.
+
+That process also involved repetitive manual work and a high risk of scheduling conflicts.
+
+In the next blog, I'll share how I built another tool to simplify that entire scheduling process.
+
+---
+
+## Project Summary
+
+| Category | Details |
+|----------|---------|
+| Project Type | Multi-tenant Result Publishing Platform |
+| Purpose | Automated arts competition result management |
+| Main Feature | Dynamic poster generation |
+| Target Users | Schools, Colleges, Arts Festivals & Event Organizers |
+| Status | Active Development |
+
+> *Small workflow improvements often create the biggest operational impact.*
