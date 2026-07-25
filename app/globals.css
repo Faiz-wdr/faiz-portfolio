@@ -1087,3 +1087,103 @@ button:focus-visible,
     transform: none !important;
   }
 }
+
+/* Minimalist Text-Only Story Actions & Engagement (No boxes / no rounded corners) */
+.story-actions-wrapper {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.story-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.story-actions-divider {
+  color: var(--text-color);
+  opacity: 0.4;
+  user-select: none;
+  font-size: 12px;
+}
+
+.story-action-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 0;
+  transition: color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.story-action-btn:hover {
+  color: var(--heading-color);
+  background: transparent;
+}
+
+.story-action-btn:active {
+  transform: scale(0.97);
+}
+
+.story-action-btn.is-liked {
+  color: var(--heading-color);
+  font-weight: 600;
+  background: transparent;
+}
+
+.story-action-btn.is-liked .action-label {
+  color: var(--heading-color);
+}
+
+.action-label {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.action-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+  opacity: 0.75;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  transition: opacity 0.2s ease;
+}
+
+.story-action-btn:hover .action-count {
+  opacity: 1;
+}
+
+.story-meta-counts {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-color);
+  font-family: var(--font-manrope), sans-serif;
+}
+
+.story-meta-counts .dot {
+  width: 3px;
+  height: 3px;
+  background-color: var(--text-color);
+  border-radius: 50%;
+}
+

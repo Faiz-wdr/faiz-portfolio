@@ -5,6 +5,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SITE_URL } from "@/lib/constants";
 
+import StoryMetaCounts from "@/components/StoryMetaCounts";
+
 export const metadata: Metadata = {
   title: "Stories",
   description: "Design stories, product thinking and lessons from building real products by Faiz Rahim.",
@@ -72,6 +74,9 @@ export default function Stories() {
               <div className="story-row-meta">
                 <div>{story.publishedDate}</div>
                 <div style={{ opacity: 0.6 }}>{story.calculatedReadingTime}</div>
+                <div style={{ marginTop: "4px" }}>
+                  <StoryMetaCounts slug={story.slug} />
+                </div>
               </div>
               <div className="story-row-details">
                 <span className="story-row-category">{story.category}</span>

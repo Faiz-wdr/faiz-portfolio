@@ -6,6 +6,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SITE_URL } from "@/lib/constants";
 
+import StoryActions from "@/components/StoryActions";
+import StoryMetaCounts from "@/components/StoryMetaCounts";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -149,6 +152,8 @@ export default async function StoryPage({ params }: PageProps) {
             <span style={{ fontWeight: 600, color: "var(--heading-color)" }}>
               {story.category}
             </span>
+            <span className="dot" aria-hidden="true" />
+            <StoryMetaCounts slug={story.slug} />
           </div>
           <h1 className="story-detail-title">{story.title}</h1>
         </header>
@@ -159,6 +164,9 @@ export default async function StoryPage({ params }: PageProps) {
             className="story-body"
             dangerouslySetInnerHTML={{ __html: story.contentHtml }}
           />
+
+          {/* Minimal Story Actions (Like & Share) */}
+          <StoryActions slug={story.slug} title={story.title} />
         </article>
 
         {/* Continue Reading Section */}
