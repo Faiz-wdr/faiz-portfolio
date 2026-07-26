@@ -82,7 +82,10 @@ export default function Home() {
         {/* Recent Projects Section */}
         <hr className="divider fade-in-section" />
         <section id="projects" className="section fade-in-section">
-          <h2 className="section-title">Recent Projects</h2>
+          <div className="section-header">
+            <h2 className="section-title">Recent Projects</h2>
+            <Link href="/projects" className="view-all-link">View all</Link>
+          </div>
           <div className="projects-list">
             {projects.map((project, idx) => (
               <a
@@ -106,7 +109,10 @@ export default function Home() {
         {/* Latest Stories Section */}
         <hr className="divider fade-in-section" />
         <section id="stories" className="section fade-in-section">
-          <h2 className="section-title">Latest Stories</h2>
+          <div className="section-header">
+            <h2 className="section-title">Latest Stories</h2>
+            <Link href="/stories" className="view-all-link">View all</Link>
+          </div>
           <div className="blogs-grid">
             {stories.map((story, idx) => (
               <Link 
