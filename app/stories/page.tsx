@@ -72,11 +72,9 @@ export default function Stories() {
               aria-label={`Read story: ${story.title}. Published: ${story.publishedDate}. Category: ${story.category}`}
             >
               <div className="story-row-meta">
-                <div>{story.publishedDate}</div>
-                <div style={{ opacity: 0.6 }}>{story.calculatedReadingTime}</div>
-                <div style={{ marginTop: "4px" }}>
-                  <StoryMetaCounts slug={story.slug} />
-                </div>
+                <span>{story.publishedDate}</span>
+                <span className="story-row-reading-time">{story.calculatedReadingTime}</span>
+                <StoryMetaCounts slug={story.slug} className="story-row-meta-counts" />
               </div>
               <div className="story-row-details">
                 <span className="story-row-category">{story.category}</span>

@@ -152,8 +152,8 @@ export default async function StoryPage({ params }: PageProps) {
             <span style={{ fontWeight: 600, color: "var(--heading-color)" }}>
               {story.category}
             </span>
-            <span className="dot" aria-hidden="true" />
-            <StoryMetaCounts slug={story.slug} />
+            <span className="dot story-detail-meta-dot" aria-hidden="true" />
+            <StoryMetaCounts slug={story.slug} className="story-detail-meta-counts" />
           </div>
           <h1 className="story-detail-title">{story.title}</h1>
         </header>
