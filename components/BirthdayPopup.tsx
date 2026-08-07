@@ -27,6 +27,13 @@ const SECTORS: Sector[] = [
     ctaLink: "mailto:kappil.faiz@gmail.com?subject=Claiming Custom Personal Website Reward"
   },
   {
+    label: "PersonalOs Pro",
+    title: "PersonalOS Pro License!",
+    desc: "signup to PersonalOs(beta) app, you will get pro access very quickly.",
+    ctaText: "Go to PersonalOS",
+    ctaLink: "https://personalos.faizrahim.online"
+  },
+  {
     label: "Resume Review",
     title: "Detailed Resume Review!",
     desc: "Awesome! You've won a comprehensive review of your resume with actionable design and content feedback to land more interviews.",
@@ -71,6 +78,16 @@ export default function BirthdayPopup() {
     if (hasMounted.current) return;
     hasMounted.current = true;
 
+    // Show popup only between Aug 9 9:00 PM and Aug 10 11:59 PM (local time)
+    const now = new Date();
+    const year = now.getFullYear();
+    const startDate = new Date(year, 7, 9, 21, 0, 0); // August is month 7 (0-indexed)
+    const endDate = new Date(year, 7, 10, 23, 59, 59, 999);
+
+    if (now < startDate || now > endDate) {
+      return;
+    }
+
     // Check if the user has already seen the popup in this session
     const hasSeen = sessionStorage.getItem("hasSeenBirthdayPopup");
     if (!hasSeen) {
@@ -93,16 +110,33 @@ export default function BirthdayPopup() {
     setIsSpinning(true);
     logEvent("Wheel Spun");
 
-    // Choose a random index (0 to 4)
-    const randomIndex = Math.floor(Math.random() * SECTORS.length);
+    // Weighted random selection:
+    // Index 0: Coffee Chat (2% chance)
+    // Index 1: Personal Website (1% chance)
+    // Index 2: PersonalOs Pro (90% chance)
+    // Index 3: Resume Review (3% chance)
+    // Index 4: Ui Audit (3% chance)
+    // Index 5: Surprise (1% chance)
+    const weights = [2, 1, 90, 3, 3, 1];
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+    let randomNum = Math.random() * totalWeight;
+
+    let randomIndex = 0;
+    for (let i = 0; i < SECTORS.length; i++) {
+      if (randomNum < weights[i]) {
+        randomIndex = i;
+        break;
+      }
+      randomNum -= weights[i];
+    }
     const prize = SECTORS[randomIndex];
     setWinningPrize(prize);
 
     // Calculate rotation:
-    // Slices are 72 degrees each.
+    // Slices are 60 degrees each.
     // Index 0 is at 12 o'clock, index 1 is at 2 o'clock, etc.
     // Target rotation to put the index at the top pointer (-90 deg in relative circle coordinate):
-    const sectorAngle = 72;
+    const sectorAngle = 60;
     const targetSectorAngle = (360 - randomIndex * sectorAngle) % 360;
 
     // Add random offset inside sector (-18 to +18 degrees) to keep it realistic and away from borders
@@ -135,9 +169,9 @@ export default function BirthdayPopup() {
   const cy = 100;
   const sectorPaths = SECTORS.map((sector, i) => {
     // Math angles:
-    // Sector 0 spans 72 degrees, centered at -90 degrees (12 o'clock), i.e. from -126 to -54 degrees.
-    const theta1 = i * 72 - 126;
-    const theta2 = i * 72 - 54;
+    // Sector 0 is centered at -90 degrees (12 o'clock), so it spans from -120 to -60 degrees.
+    const theta1 = i * 60 - 120;
+    const theta2 = i * 60 - 60;
 
     const rad1 = (theta1 * Math.PI) / 180;
     const rad2 = (theta2 * Math.PI) / 180;
@@ -150,7 +184,7 @@ export default function BirthdayPopup() {
     const pathData = `M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2} Z`;
 
     // Text coordinates (at radius 60)
-    const thetaMid = i * 72 - 90;
+    const thetaMid = i * 60 - 90;
     const radMid = (thetaMid * Math.PI) / 180;
     const tx = cx + 60 * Math.cos(radMid);
     const ty = cy + 60 * Math.sin(radMid);
@@ -182,6 +216,7 @@ export default function BirthdayPopup() {
   const getLabelLines = (label: string) => {
     if (label === "Coffee Chat") return ["Coffee", "Chat"];
     if (label === "Personal Website") return ["Personal", "Website"];
+    if (label === "PersonalOs Pro") return ["PersonalOs", "Pro"];
     if (label === "Resume Review") return ["Resume", "Review"];
     if (label === "Ui Audit") return ["UI UX", "Audit"];
     return [label];
@@ -333,31 +368,46 @@ export default function BirthdayPopup() {
           </button>
 
           {/* Result Banner Overlay */}
-          <div className={`birthday-popup-result ${showResult ? "is-visible" : ""}`}>
-            <h3 className="birthday-popup-result-title">Congratulations!</h3>
-            <p className="birthday-popup-result-desc" style={{ marginBottom: "12px" }}>
-              You spun the wheel and won:
-            </p>
-            <div 
-              className="birthday-popup-result-prize" 
-              style={{ 
-                fontSize: "20px", 
-                fontWeight: "800", 
-                color: "#9A7418", 
-                lineHeight: "1.3",
-                marginBottom: "12px",
-                fontFamily: "var(--font-playfair), Georgia, serif"
-              }}
-            >
-              {winningPrize?.title}
+          <div
+            className={`birthday-popup-result ${showResult ? "is-visible" : ""}`}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "24px",
+              boxSizing: "border-box"
+            }}
+          >
+            {/* Centered Success Text content */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexGrow: 1, width: "100%", textAlign: "center" }}>
+              <h3 className="birthday-popup-result-title">Congratulations!</h3>
+              <p className="birthday-popup-result-desc" style={{ marginBottom: "8px" }}>
+                You spun the wheel and won:
+              </p>
+              <div
+                className="birthday-popup-result-prize"
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "800",
+                  color: "#9A7418",
+                  lineHeight: "1.3",
+                  marginBottom: "8px",
+                  fontFamily: "var(--font-playfair), Georgia, serif"
+                }}
+              >
+                {winningPrize?.title}
+              </div>
+              <p className="birthday-popup-result-desc" style={{ fontSize: "13.5px", marginBottom: "0px", lineHeight: "1.4" }}>
+                {winningPrize?.desc}
+              </p>
             </div>
-            <p className="birthday-popup-result-desc" style={{ fontSize: "13.5px", marginBottom: "24px", lineHeight: "1.4" }}>
-              {winningPrize?.desc}
-            </p>
-            <a 
+
+            {/* Primary Action Button (Positioned at the exact same bottom location) */}
+            <a
               href={winningPrize?.ctaLink}
               className="birthday-popup-btn"
-              style={{ display: "block", textDecoration: "none", textAlign: "center" }}
+              style={{ display: "block", textDecoration: "none", textAlign: "center", marginTop: "24px" }}
               onClick={() => {
                 logEvent("Claim Button Clicked", { gift: winningPrize?.label });
                 handleClose();
