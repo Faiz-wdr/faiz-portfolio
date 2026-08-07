@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Manrope } from "next/font/google";
+import { Geist, Manrope, Playfair_Display } from "next/font/google";
 import FadeInObserver from "@/components/FadeInObserver";
+import BirthdayPopup from "@/components/BirthdayPopup";
 import { SITE_URL } from "@/lib/constants";
 import "./globals.css";
 
@@ -15,6 +16,13 @@ const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
   weight: ["500"],
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["600", "700"],
   display: "swap",
 });
 
@@ -106,11 +114,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${manrope.variable} h-full`}
+      className={`${geist.variable} ${manrope.variable} ${playfair.variable} h-full`}
     >
       <body className="min-h-full">
         {children}
         <FadeInObserver />
+        <BirthdayPopup />
       </body>
     </html>
   );

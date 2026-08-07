@@ -1259,3 +1259,216 @@ button:focus-visible,
   background-color: var(--text-color);
   border-radius: 50%;
 }
+
+/* Birthday Pop-up Modal */
+.birthday-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.birthday-popup-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.birthday-popup-card {
+  width: 320px;
+  max-width: 90vw;
+  background-color: transparent;
+  position: relative;
+  transform: translateY(24px);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.birthday-popup-overlay.is-open .birthday-popup-card {
+  transform: translateY(0);
+}
+
+.birthday-popup-avatar-container {
+  width: 100%;
+  position: relative;
+  z-index: 10;
+  margin-bottom: -1px;
+}
+
+.birthday-popup-avatar {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.birthday-popup-body {
+  background-color: #fcf9f8;
+  border-radius: 0 0 24px 24px;
+  padding: 28px 24px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  z-index: 5;
+}
+
+.birthday-popup-title {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1c1b1b;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.birthday-popup-subtitle {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  color: #414753;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.birthday-popup-subtitle .highlight {
+  color: #ba1a1a;
+  font-weight: 600;
+}
+
+.birthday-popup-wheel-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 24px;
+}
+
+.birthday-popup-btn {
+  width: 100%;
+  background-color: #1c1b1b;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 12px rgba(28, 27, 27, 0.15);
+}
+
+.birthday-popup-btn:hover {
+  background-color: #000000;
+}
+
+.birthday-popup-btn:active {
+  transform: scale(0.98);
+}
+
+.birthday-popup-btn:disabled {
+  background-color: #8a8f98;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.birthday-popup-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 20;
+  transition: background-color 0.2s ease;
+}
+
+.birthday-popup-close-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Result Overlay */
+.birthday-popup-result {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #fcf9f8;
+  border-radius: 0 0 24px 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 15;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.birthday-popup-result.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.birthday-popup-result-title {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1c1b1b;
+  margin-bottom: 12px;
+}
+
+.birthday-popup-result-desc {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 15px;
+  color: #414753;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.birthday-popup-result-prize {
+  font-size: 36px;
+  font-weight: 800;
+  color: #9A7418;
+  margin-bottom: 24px;
+  font-family: var(--font-geist), sans-serif;
+  animation: prize-pulse 1.5s infinite alternate;
+}
+
+@keyframes prize-pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
