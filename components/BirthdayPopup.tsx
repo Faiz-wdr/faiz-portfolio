@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { createGiftToken } from "../lib/personalos";
 import { track } from "@vercel/analytics";
 
 interface Sector {
@@ -26,13 +25,6 @@ const SECTORS: Sector[] = [
     desc: "Incredible! You've won a custom personal website designed and built from scratch to showcase your work.",
     ctaText: "Claim My Website",
     ctaLink: "mailto:kappil.faiz@gmail.com?subject=Claiming Custom Personal Website Reward"
-  },
-  {
-    label: "PersonalOs Pro",
-    title: "PersonalOs Pro License!",
-    desc: "Fantastic! You've won a lifetime Pro license for PersonalOs, the ultimate productivity workspace.",
-    ctaText: "Redeem License",
-    ctaLink: "mailto:kappil.faiz@gmail.com?subject=Redeeming PersonalOs Pro License"
   },
   {
     label: "Resume Review",
@@ -73,11 +65,6 @@ export default function BirthdayPopup() {
   const [showResult, setShowResult] = useState(false);
   const [winningPrize, setWinningPrize] = useState<Sector | null>(null);
 
-  // PersonalOS integration states
-  const [tokenRedeemUrl, setTokenRedeemUrl] = useState<string | null>(null);
-  const [tokenError, setTokenError] = useState(false);
-  const [isTokenFetching, setIsTokenFetching] = useState(false);
-  
   const hasMounted = useRef(false);
 
   useEffect(() => {
@@ -106,45 +93,16 @@ export default function BirthdayPopup() {
     setIsSpinning(true);
     logEvent("Wheel Spun");
 
-    // Reset token integration states
-    setTokenRedeemUrl(null);
-    setTokenError(false);
-    setIsTokenFetching(false);
-
-    // Choose a random index (0 to 5)
+    // Choose a random index (0 to 4)
     const randomIndex = Math.floor(Math.random() * SECTORS.length);
     const prize = SECTORS[randomIndex];
     setWinningPrize(prize);
 
-    // If the landed gift is PersonalOS Pro (which is "PersonalOs Pro" in the array)
-    if (prize.label.toLowerCase() === "personalos pro") {
-      setIsTokenFetching(true);
-      logEvent("PersonalOS Token Requested");
-      
-      createGiftToken()
-        .then((res) => {
-          if (res.success && res.redeemUrl) {
-            setTokenRedeemUrl(res.redeemUrl);
-            logEvent("PersonalOS Token Created");
-          } else {
-            console.error("[BirthdayPopup] Failed to generate PersonalOS gift token:", res.error);
-            setTokenError(true);
-          }
-        })
-        .catch((err) => {
-          console.error("[BirthdayPopup] Failed to generate PersonalOS gift token (Server Action Error):", err);
-          setTokenError(true);
-        })
-        .finally(() => {
-          setIsTokenFetching(false);
-        });
-    }
-
     // Calculate rotation:
-    // Slices are 60 degrees each.
+    // Slices are 72 degrees each.
     // Index 0 is at 12 o'clock, index 1 is at 2 o'clock, etc.
     // Target rotation to put the index at the top pointer (-90 deg in relative circle coordinate):
-    const sectorAngle = 60;
+    const sectorAngle = 72;
     const targetSectorAngle = (360 - randomIndex * sectorAngle) % 360;
 
     // Add random offset inside sector (-18 to +18 degrees) to keep it realistic and away from borders
@@ -177,9 +135,9 @@ export default function BirthdayPopup() {
   const cy = 100;
   const sectorPaths = SECTORS.map((sector, i) => {
     // Math angles:
-    // Sector 0 is centered at -90 degrees (12 o'clock), so it spans from -120 to -60 degrees.
-    const theta1 = i * 60 - 120;
-    const theta2 = i * 60 - 60;
+    // Sector 0 spans 72 degrees, centered at -90 degrees (12 o'clock), i.e. from -126 to -54 degrees.
+    const theta1 = i * 72 - 126;
+    const theta2 = i * 72 - 54;
 
     const rad1 = (theta1 * Math.PI) / 180;
     const rad2 = (theta2 * Math.PI) / 180;
@@ -192,7 +150,7 @@ export default function BirthdayPopup() {
     const pathData = `M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2} Z`;
 
     // Text coordinates (at radius 60)
-    const thetaMid = i * 60 - 90;
+    const thetaMid = i * 72 - 90;
     const radMid = (thetaMid * Math.PI) / 180;
     const tx = cx + 60 * Math.cos(radMid);
     const ty = cy + 60 * Math.sin(radMid);
@@ -224,7 +182,6 @@ export default function BirthdayPopup() {
   const getLabelLines = (label: string) => {
     if (label === "Coffee Chat") return ["Coffee", "Chat"];
     if (label === "Personal Website") return ["Personal", "Website"];
-    if (label === "PersonalOs Pro") return ["PersonalOs", "Pro"];
     if (label === "Resume Review") return ["Resume", "Review"];
     if (label === "Ui Audit") return ["UI UX", "Audit"];
     return [label];
@@ -377,117 +334,37 @@ export default function BirthdayPopup() {
 
           {/* Result Banner Overlay */}
           <div className={`birthday-popup-result ${showResult ? "is-visible" : ""}`}>
-            {winningPrize?.label.toLowerCase() === "personalos pro" ? (
-              // PersonalOS Pro Flow
-              <>
-                {isTokenFetching ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
-                    <p className="birthday-popup-result-desc" style={{ marginBottom: "16px" }}>
-                      Generating your Pro license...
-                    </p>
-                    <div style={{
-                      width: "24px",
-                      height: "24px",
-                      border: "3px solid rgba(154, 116, 24, 0.1)",
-                      borderTop: "3px solid #9A7418",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite"
-                    }} />
-                  </div>
-                ) : tokenError ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
-                    <h3 className="birthday-popup-result-title" style={{ color: "#ba1a1a", fontSize: "20px", marginBottom: "8px" }}>
-                      Sorry, something went wrong.
-                    </h3>
-                    <p className="birthday-popup-result-desc" style={{ marginBottom: "24px" }}>
-                      Please try again.
-                    </p>
-                    <button className="birthday-popup-btn" onClick={handleClose}>
-                      Close
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <h3 className="birthday-popup-result-title" style={{ marginBottom: "8px" }}>
-                      🎉 Congratulations!
-                    </h3>
-                    <div 
-                      className="birthday-popup-result-prize" 
-                      style={{ 
-                        fontSize: "24px", 
-                        fontWeight: "800", 
-                        color: "#9A7418", 
-                        lineHeight: "1.2",
-                        marginBottom: "4px",
-                        fontFamily: "var(--font-playfair), Georgia, serif"
-                      }}
-                    >
-                      PersonalOS Pro
-                    </div>
-                    <div 
-                      style={{ 
-                        fontSize: "16px", 
-                        fontWeight: "600", 
-                        color: "#1c1b1b", 
-                        marginBottom: "16px",
-                        fontFamily: "var(--font-manrope), sans-serif"
-                      }}
-                    >
-                      Lifetime Access
-                    </div>
-                    <p className="birthday-popup-result-desc" style={{ fontSize: "14px", marginBottom: "24px", lineHeight: "1.4" }}>
-                      Activate your Pro access by signing in to PersonalOS.
-                    </p>
-                    <a 
-                      href={tokenRedeemUrl || "#"}
-                      className="birthday-popup-btn"
-                      style={{ display: "block", textDecoration: "none", textAlign: "center" }}
-                      onClick={() => {
-                        logEvent("Claim Button Clicked", { gift: "personalos-pro" });
-                        handleClose();
-                      }}
-                    >
-                      Claim in PersonalOS
-                    </a>
-                  </>
-                )}
-              </>
-            ) : (
-              // Default non-PersonalOS Pro Flow
-              <>
-                <h3 className="birthday-popup-result-title">Congratulations!</h3>
-                <p className="birthday-popup-result-desc" style={{ marginBottom: "12px" }}>
-                  You spun the wheel and won:
-                </p>
-                <div 
-                  className="birthday-popup-result-prize" 
-                  style={{ 
-                    fontSize: "20px", 
-                    fontWeight: "800", 
-                    color: "#9A7418", 
-                    lineHeight: "1.3",
-                    marginBottom: "12px",
-                    fontFamily: "var(--font-playfair), Georgia, serif"
-                  }}
-                >
-                  {winningPrize?.title}
-                </div>
-                <p className="birthday-popup-result-desc" style={{ fontSize: "13.5px", marginBottom: "24px", lineHeight: "1.4" }}>
-                  {winningPrize?.desc}
-                </p>
-                <a 
-                  href={winningPrize?.ctaLink}
-                  className="birthday-popup-btn"
-                  style={{ display: "block", textDecoration: "none", textAlign: "center" }}
-                  onClick={() => {
-                    logEvent("Claim Button Clicked", { gift: winningPrize?.label });
-                    handleClose();
-                  }}
-                >
-                  {winningPrize?.ctaText}
-                </a>
-              </>
-            )}
+            <h3 className="birthday-popup-result-title">Congratulations!</h3>
+            <p className="birthday-popup-result-desc" style={{ marginBottom: "12px" }}>
+              You spun the wheel and won:
+            </p>
+            <div 
+              className="birthday-popup-result-prize" 
+              style={{ 
+                fontSize: "20px", 
+                fontWeight: "800", 
+                color: "#9A7418", 
+                lineHeight: "1.3",
+                marginBottom: "12px",
+                fontFamily: "var(--font-playfair), Georgia, serif"
+              }}
+            >
+              {winningPrize?.title}
+            </div>
+            <p className="birthday-popup-result-desc" style={{ fontSize: "13.5px", marginBottom: "24px", lineHeight: "1.4" }}>
+              {winningPrize?.desc}
+            </p>
+            <a 
+              href={winningPrize?.ctaLink}
+              className="birthday-popup-btn"
+              style={{ display: "block", textDecoration: "none", textAlign: "center" }}
+              onClick={() => {
+                logEvent("Claim Button Clicked", { gift: winningPrize?.label });
+                handleClose();
+              }}
+            >
+              {winningPrize?.ctaText}
+            </a>
           </div>
 
         </div>
