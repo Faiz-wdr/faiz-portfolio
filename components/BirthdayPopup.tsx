@@ -123,11 +123,16 @@ export default function BirthdayPopup() {
       
       createGiftToken()
         .then((res) => {
-          setTokenRedeemUrl(res.redeemUrl);
-          logEvent("PersonalOS Token Created");
+          if (res.success && res.redeemUrl) {
+            setTokenRedeemUrl(res.redeemUrl);
+            logEvent("PersonalOS Token Created");
+          } else {
+            console.error("[BirthdayPopup] Failed to generate PersonalOS gift token:", res.error);
+            setTokenError(true);
+          }
         })
         .catch((err) => {
-          console.error("[BirthdayPopup] Failed to generate PersonalOS gift token:", err);
+          console.error("[BirthdayPopup] Failed to generate PersonalOS gift token (Server Action Error):", err);
           setTokenError(true);
         })
         .finally(() => {

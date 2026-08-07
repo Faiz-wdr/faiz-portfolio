@@ -1,8 +1,10 @@
 "use server";
 
 export interface GiftTokenResponse {
-  token: string;
-  redeemUrl: string;
+  success: boolean;
+  token?: string;
+  redeemUrl?: string;
+  error?: string;
 }
 
 /**
@@ -14,11 +16,12 @@ export async function createGiftToken(): Promise<GiftTokenResponse> {
   const apiKey = process.env.PERSONALOS_API_KEY;
 
   if (!apiUrl || !apiKey) {
-    console.error("Missing PersonalOS environment variables:", {
-      hasUrl: !!apiUrl,
-      hasKey: !!apiKey,
-    });
-    throw new Error("PersonalOS configuration is missing on the server.");
+    const errorMsg = `Configuration missing on the server. URL is ${!!apiUrl ? "configured" : "MISSING"} and Key is ${!!apiKey ? "configured" : "MISSING"}.`;
+    console.error(`[PersonalOS Service] ${errorMsg}`);
+    return {
+      success: false,
+      error: errorMsg
+    };
   }
 
   const endpoint = `${apiUrl.replace(/\/$/, "")}/api/gifts/create-token`;
@@ -42,21 +45,37 @@ export async function createGiftToken(): Promise<GiftTokenResponse> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[PersonalOS Service] Failed to create token. Status: ${response.status}. Error: ${errorText}`);
-      throw new Error(`Failed to generate gift token (status ${response.status}).`);
+      const errorMsg = `API returned error status ${response.status}: ${errorText || "No details"}`;
+      console.error(`[PersonalOS Service] ${errorMsg}`);
+      return {
+        success: false,
+        error: errorMsg
+      };
     }
 
-    const data = (await response.json()) as GiftTokenResponse;
+    const data = await response.json();
     
     if (!data.token || !data.redeemUrl) {
-      console.error("[PersonalOS Service] Received invalid response structure:", data);
-      throw new Error("Invalid token response from PersonalOS API.");
+      const errorMsg = "Received invalid response structure from PersonalOS API.";
+      console.error(`[PersonalOS Service] ${errorMsg}`, data);
+      return {
+        success: false,
+        error: errorMsg
+      };
     }
 
     console.log("[PersonalOS Service] Successfully generated gift token.");
-    return data;
-  } catch (error) {
-    console.error("[PersonalOS Service] Network or operational error during token request:", error);
-    throw error;
+    return {
+      success: true,
+      token: data.token,
+      redeemUrl: data.redeemUrl
+    };
+  } catch (error: any) {
+    const errorMsg = `Network or connection failure: ${error.message || error}`;
+    console.error("[PersonalOS Service] operational error during token request:", error);
+    return {
+      success: false,
+      error: errorMsg
+    };
   }
 }
