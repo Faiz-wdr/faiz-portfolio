@@ -1472,3 +1472,155 @@ button:focus-visible,
     transform: rotate(360deg);
   }
 }
+
+/* Birthday Popup Form Styling */
+.birthday-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.birthday-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 250px;
+  align-items: flex-start;
+}
+
+.birthday-form-label {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #414753;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+
+.birthday-form-input {
+  width: 100%;
+  max-width: 250px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font-manrope), sans-serif;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1c1b1b;
+  text-align: left;
+  transition: border-color 0.2s ease;
+}
+
+.birthday-form-input:focus {
+  outline: none;
+  border-color: #ba1a1a;
+}
+
+.birthday-form-textarea {
+  width: 100%;
+  max-width: 250px;
+  height: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font-manrope), sans-serif;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #1c1b1b;
+  text-align: left;
+  resize: none;
+  transition: border-color 0.2s ease;
+}
+
+.birthday-form-textarea:focus {
+  outline: none;
+  border-color: #ba1a1a;
+}
+
+.birthday-word-counter {
+  width: 100%;
+  max-width: 250px;
+  font-size: 10px;
+  color: #999999;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.birthday-word-counter.valid {
+  color: green;
+}
+
+.birthday-word-counter.invalid {
+  color: #ba1a1a;
+}
+
+.birthday-popup-change-btn {
+  background: none;
+  border: none;
+  color: #ba1a1a;
+  text-decoration: underline;
+  font-size: 12px;
+  font-family: var(--font-manrope), sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  text-align: center;
+  transition: color 0.2s ease;
+}
+
+.birthday-popup-change-btn:hover {
+  color: #000000;
+}
+
+.birthday-surprise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.birthday-surprise-item {
+  width: 100%;
+  max-width: 240px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: #ffffff;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1b1b;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.birthday-surprise-item:hover {
+  border-color: #ba1a1a;
+  background-color: #fcf9f8;
+}
+
+.birthday-success-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 0;
+  gap: 12px;
+}
+
+.birthday-success-icon {
+  font-size: 40px;
+  color: green;
+}

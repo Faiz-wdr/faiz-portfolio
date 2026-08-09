@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Manrope, Playfair_Display } from "next/font/google";
 import FadeInObserver from "@/components/FadeInObserver";
 import BirthdayPopup from "@/components/BirthdayPopup";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { SITE_URL } from "@/lib/constants";
 import "./globals.css";
 
@@ -120,6 +121,7 @@ export default function RootLayout({
         {children}
         <FadeInObserver />
         <BirthdayPopup />
+        <AnalyticsTracker />
       </body>
     </html>
   );

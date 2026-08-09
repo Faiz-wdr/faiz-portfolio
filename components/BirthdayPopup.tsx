@@ -63,6 +63,49 @@ const logEvent = (eventName: string, properties?: Record<string, any>) => {
   } catch (e) {
     // Vercel Analytics might fail in dev environments, ignore silently
   }
+
+  // Trigger our custom database tracking
+  import("@/lib/analytics").then(({ trackEvent, trackWheelSpin, getSessionId }) => {
+    if (eventName === "Wheel Opened") {
+      trackEvent("Wheel Open");
+    } else if (eventName === "Wheel Spun") {
+      trackEvent("Wheel Spin");
+    } else if (eventName === "Gift Won" && properties?.gift) {
+      trackEvent("Gift Won");
+      
+      const giftLabel = properties.gift;
+      let giftId = "Surprise";
+      if (giftLabel === "Coffee Chat") giftId = "Coffee Chat";
+      else if (giftLabel === "Personal Website") giftId = "Personal Website";
+      else if (giftLabel === "PersonalOs Pro") giftId = "PersonalOs Pro";
+      else if (giftLabel === "Resume Review") giftId = "Resume Review";
+      else if (giftLabel === "Ui Audit" || giftLabel === "Ui UX Audit") giftId = "Ui Audit";
+
+      trackWheelSpin({
+        gift: giftLabel,
+        giftId: giftId,
+        claimed: false,
+        status: "pending"
+      });
+    } else if (eventName === "Claim Button Clicked" && properties?.gift) {
+      trackEvent("Claim Button Click");
+      
+      const giftLabel = properties.gift;
+      let giftId = "Surprise";
+      if (giftLabel === "Coffee Chat") giftId = "Coffee Chat";
+      else if (giftLabel === "Personal Website") giftId = "Personal Website";
+      else if (giftLabel === "PersonalOs Pro") giftId = "PersonalOs Pro";
+      else if (giftLabel === "Resume Review") giftId = "Resume Review";
+      else if (giftLabel === "Ui Audit" || giftLabel === "Ui UX Audit") giftId = "Ui Audit";
+
+      const sessionId = getSessionId();
+      fetch("/api/wheel-spins", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, giftId })
+      }).catch(err => console.error("Error updating claim:", err));
+    }
+  }).catch(err => console.error("Failed to load analytics module:", err));
 };
 
 export default function BirthdayPopup() {
@@ -72,11 +115,113 @@ export default function BirthdayPopup() {
   const [showResult, setShowResult] = useState(false);
   const [winningPrize, setWinningPrize] = useState<Sector | null>(null);
 
+  // Claim Form States
+  const [claimSubmitted, setClaimSubmitted] = useState(false);
+  const [claimName, setClaimName] = useState("");
+  const [claimEmail, setClaimEmail] = useState("");
+  const [websitePurpose, setWebsitePurpose] = useState("");
+  const [websiteDesc, setWebsiteDesc] = useState("");
+  const [resumeLink, setResumeLink] = useState("");
+  const [projectLink, setProjectLink] = useState("");
+  const [submittingClaim, setSubmittingClaim] = useState(false);
+
+  const getWordCount = (text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
+
+  const handleChooseSurpriseGift = (giftLabel: string) => {
+    const selected = SECTORS.find(s => s.label === giftLabel);
+    if (selected) {
+      setWinningPrize(selected);
+      logEvent("Gift Won", { gift: selected.label });
+    }
+  };
+
+  const [forcePersonalOsProNext, setForcePersonalOsProNext] = useState(false);
+
+  const handleChangeGiftClick = () => {
+    setForcePersonalOsProNext(true);
+    setWinningPrize(null);
+    setShowResult(false);
+    
+    setClaimName("");
+    setClaimEmail("");
+    setWebsitePurpose("");
+    setWebsiteDesc("");
+    setResumeLink("");
+    setProjectLink("");
+  };
+
+  const handleSubmitClaim = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!winningPrize) return;
+
+    setSubmittingClaim(true);
+
+    let notes = "";
+    if (winningPrize.label === "Personal Website") {
+      notes = `Purpose: ${websitePurpose}\nDescription:\n${websiteDesc}`;
+    } else if (winningPrize.label === "Resume Review") {
+      notes = `Resume Link: ${resumeLink}`;
+    } else if (winningPrize.label === "Ui Audit") {
+      notes = `Project Link: ${projectLink}`;
+    }
+
+    try {
+      const { getSessionId } = await import("@/lib/analytics");
+      const sessionId = getSessionId();
+
+      const res = await fetch("/api/gift-claims", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId,
+          giftId: winningPrize.label,
+          gift: winningPrize.title,
+          email: (winningPrize.label === "Personal Website" || winningPrize.label === "Ui Audit")
+            ? claimEmail
+            : "anonymous@personalos.com",
+          name: (winningPrize.label === "Personal Website")
+            ? claimName
+            : "Anonymous",
+          notes,
+        }),
+      });
+
+      if (res.ok) {
+        setClaimSubmitted(true);
+
+        if (winningPrize.label === "Coffee Chat") {
+          const waUrl = `https://wa.me/918086199683?text=${encodeURIComponent(
+            `Hi Faiz, I won the 1-on-1 Coffee Chat reward! send me the location🥰).`
+          )}`;
+          window.open(waUrl, "_blank");
+        } else if (winningPrize.label === "PersonalOs Pro") {
+          window.open("https://personalos.faizrahim.online/", "_blank");
+        }
+
+        setTimeout(() => {
+          handleClose();
+        }, 3000);
+      }
+    } catch (err) {
+      console.error("Failed to submit claim:", err);
+    } finally {
+      setSubmittingClaim(false);
+    }
+  };
+
   const hasMounted = useRef(false);
 
   useEffect(() => {
     if (hasMounted.current) return;
     hasMounted.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const forceShow = params.get("test_birthday") === "true";
+    const testGift = params.get("test_gift");
 
     // Show popup only between Aug 9 9:00 PM and Aug 10 11:59 PM (local time)
     const now = new Date();
@@ -84,16 +229,34 @@ export default function BirthdayPopup() {
     const startDate = new Date(year, 7, 9, 21, 0, 0); // August is month 7 (0-indexed)
     const endDate = new Date(year, 7, 10, 23, 59, 59, 999);
 
-    if (now < startDate || now > endDate) {
+    if (!forceShow && (now < startDate || now > endDate)) {
       return;
     }
 
     // Check if the user has already seen the popup in this session
     const hasSeen = sessionStorage.getItem("hasSeenBirthdayPopup");
-    if (!hasSeen) {
+    if (!hasSeen || forceShow) {
       const timer = setTimeout(() => {
         setIsOpen(true);
         logEvent("Wheel Opened");
+
+        if (testGift) {
+          let mappedLabel = "";
+          if (testGift === "PersonalOsPro") mappedLabel = "PersonalOs Pro";
+          else if (testGift === "PersonalWebsite") mappedLabel = "Personal Website";
+          else if (testGift === "ResumeReview") mappedLabel = "Resume Review";
+          else if (testGift === "UiAudit") mappedLabel = "Ui Audit";
+          else if (testGift === "CoffeeChat") mappedLabel = "Coffee Chat";
+          else if (testGift === "Surprise") mappedLabel = "Surprise";
+
+          if (mappedLabel) {
+            const sector = SECTORS.find(s => s.label === mappedLabel);
+            if (sector) {
+              setWinningPrize(sector);
+              setShowResult(true);
+            }
+          }
+        }
       }, 1000); // Show popup after 1 second
       return () => clearTimeout(timer);
     }
@@ -111,23 +274,37 @@ export default function BirthdayPopup() {
     logEvent("Wheel Spun");
 
     // Weighted random selection:
-    // Index 0: Coffee Chat (2% chance)
-    // Index 1: Personal Website (1% chance)
-    // Index 2: PersonalOs Pro (90% chance)
-    // Index 3: Resume Review (3% chance)
-    // Index 4: Ui Audit (3% chance)
-    // Index 5: Surprise (1% chance)
-    const weights = [2, 1, 90, 3, 3, 1];
+    // Index 0: Coffee Chat (4% chance - only before 3 PM)
+    // Index 1: Personal Website (2% chance)
+    // Index 2: PersonalOs Pro (80% or 84% chance depending on Coffee Chat availability)
+    // Index 3: Resume Review (6% chance)
+    // Index 4: Ui Audit (6% chance)
+    // Index 5: Surprise (2% chance)
+    const nowTime = new Date();
+    const isBefore3PM = nowTime.getHours() < 15;
+    const weights = [
+      isBefore3PM ? 4 : 0,
+      2,
+      isBefore3PM ? 80 : 84,
+      6,
+      6,
+      2
+    ];
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
     let randomNum = Math.random() * totalWeight;
 
     let randomIndex = 0;
-    for (let i = 0; i < SECTORS.length; i++) {
-      if (randomNum < weights[i]) {
-        randomIndex = i;
-        break;
+    if (forcePersonalOsProNext) {
+      randomIndex = 2; // Index of PersonalOs Pro
+      setForcePersonalOsProNext(false);
+    } else {
+      for (let i = 0; i < SECTORS.length; i++) {
+        if (randomNum < weights[i]) {
+          randomIndex = i;
+          break;
+        }
+        randomNum -= weights[i];
       }
-      randomNum -= weights[i];
     }
     const prize = SECTORS[randomIndex];
     setWinningPrize(prize);
@@ -373,48 +550,206 @@ export default function BirthdayPopup() {
             style={{
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-between",
+              justifyContent: "flex-start",
               alignItems: "center",
               padding: "24px",
-              boxSizing: "border-box"
+              boxSizing: "border-box",
+              overflowY: "auto"
             }}
           >
-            {/* Centered Success Text content */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexGrow: 1, width: "100%", textAlign: "center" }}>
-              <h3 className="birthday-popup-result-title">Congratulations!</h3>
-              <p className="birthday-popup-result-desc" style={{ marginBottom: "8px" }}>
-                You spun the wheel and won:
-              </p>
-              <div
-                className="birthday-popup-result-prize"
-                style={{
-                  fontSize: "20px",
-                  fontWeight: "800",
-                  color: "#9A7418",
-                  lineHeight: "1.3",
-                  marginBottom: "8px",
-                  fontFamily: "var(--font-playfair), Georgia, serif"
-                }}
-              >
-                {winningPrize?.title}
+            {claimSubmitted ? (
+              <div className="birthday-success-msg">
+                <span className="birthday-success-icon">✓</span>
+                <h3 className="birthday-popup-result-title">Thank You!</h3>
+                <p className="birthday-popup-result-desc">
+                  Your claim has been submitted successfully.
+                </p>
               </div>
-              <p className="birthday-popup-result-desc" style={{ fontSize: "13.5px", marginBottom: "0px", lineHeight: "1.4" }}>
-                {winningPrize?.desc}
-              </p>
-            </div>
+            ) : winningPrize?.label === "Surprise" ? (
+              <div style={{ width: "100%", textAlign: "center" }}>
+                <h3 className="birthday-popup-result-title" style={{ fontSize: "20px" }}>Surprise Gift!</h3>
+                <p className="birthday-popup-result-desc" style={{ fontSize: "13px", marginBottom: "16px" }}>
+                  Choose any one of the gifts below:
+                </p>
+                <div className="birthday-surprise-list">
+                  <button type="button" onClick={() => handleChooseSurpriseGift("PersonalOs Pro")} className="birthday-surprise-item">
+                    PersonalOs Pro
+                  </button>
+                  <button type="button" onClick={() => handleChooseSurpriseGift("Personal Website")} className="birthday-surprise-item">
+                    Personal Website
+                  </button>
+                  <button type="button" onClick={() => handleChooseSurpriseGift("Resume Review")} className="birthday-surprise-item">
+                    Resume Review
+                  </button>
+                  <button type="button" onClick={() => handleChooseSurpriseGift("Ui Audit")} className="birthday-surprise-item">
+                    Ui Audit
+                  </button>
+                  {/* Only before 3 PM */}
+                  {(new Date().getHours() < 15) && (
+                    <button type="button" onClick={() => handleChooseSurpriseGift("Coffee Chat")} className="birthday-surprise-item">
+                      Coffee Chat
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitClaim} className="birthday-form">
+                <h3 className="birthday-popup-result-title" style={{ fontSize: "18px", textAlign: "center", marginBottom: "4px" }}>
+                  Congratulations!
+                </h3>
+                <p className="birthday-popup-result-desc" style={{ fontSize: "12px", textAlign: "center", marginBottom: "16px" }}>
+                  You won: <strong style={{ color: "#9A7418" }}>{winningPrize?.title}</strong>
+                </p>
 
-            {/* Primary Action Button (Positioned at the exact same bottom location) */}
-            <a
-              href={winningPrize?.ctaLink}
-              className="birthday-popup-btn"
-              style={{ display: "block", textDecoration: "none", textAlign: "center", marginTop: "24px" }}
-              onClick={() => {
-                logEvent("Claim Button Clicked", { gift: winningPrize?.label });
-                handleClose();
-              }}
-            >
-              {winningPrize?.ctaText}
-            </a>
+                {winningPrize?.label === "Coffee Chat" && (
+                  <p style={{ fontSize: "12px", color: "#414753", marginBottom: "8px", textAlign: "center", fontWeight: "600" }}>
+                    Contact me I will send the location.
+                  </p>
+                )}
+
+                {winningPrize?.label === "Personal Website" && (
+                  <p style={{ fontSize: "11px", color: "#414753", marginBottom: "8px", textAlign: "center", lineHeight: "1.4" }}>
+                    It is a single page website. You will get your website within 24 hrs.
+                  </p>
+                )}
+
+                {winningPrize?.label === "Resume Review" && (
+                  <p style={{ fontSize: "12px", color: "#414753", marginBottom: "8px", textAlign: "center", fontWeight: "600" }}>
+                    Submit your resume link.
+                  </p>
+                )}
+
+                {winningPrize?.label === "Ui Audit" && (
+                  <p style={{ fontSize: "12px", color: "#414753", marginBottom: "8px", textAlign: "center", fontWeight: "600" }}>
+                    Submit your project link for a UI/UX audit.
+                  </p>
+                )}
+
+                {winningPrize?.label === "PersonalOs Pro" && (
+                  <p style={{ fontSize: "12px", color: "#414753", marginBottom: "8px", textAlign: "center", lineHeight: "1.4", fontWeight: "600" }}>
+                    You won PersonalOS App Pro access. Login to the app now, you will get Pro access shortly.
+                  </p>
+                )}
+
+                {/* Change Gift Button at the top, just before form labels */}
+                {(winningPrize?.label === "Personal Website" || winningPrize?.label === "Ui Audit") && (
+                  <button
+                    type="button"
+                    onClick={handleChangeGiftClick}
+                    className="birthday-popup-change-btn"
+                    style={{ marginTop: "0px", marginBottom: "16px" }}
+                  >
+                    Change gift
+                  </button>
+                )}
+
+                {winningPrize?.label === "Personal Website" && (
+                  <div className="birthday-form-group">
+                    <label className="birthday-form-label">Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={claimName}
+                      onChange={(e) => setClaimName(e.target.value)}
+                      className="birthday-form-input"
+                      placeholder="Your Name"
+                    />
+                  </div>
+                )}
+
+                {(winningPrize?.label === "Personal Website" || winningPrize?.label === "Ui Audit") && (
+                  <div className="birthday-form-group">
+                    <label className="birthday-form-label">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={claimEmail}
+                      onChange={(e) => setClaimEmail(e.target.value)}
+                      className="birthday-form-input"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                )}
+
+                {winningPrize?.label === "Personal Website" && (
+                  <>
+                    <div className="birthday-form-group">
+                      <label className="birthday-form-label">Purpose of website</label>
+                      <input
+                        type="text"
+                        required
+                        value={websitePurpose}
+                        onChange={(e) => setWebsitePurpose(e.target.value)}
+                        className="birthday-form-input"
+                        placeholder="e.g. Portfolio, Blog"
+                      />
+                    </div>
+
+                    <div className="birthday-form-group">
+                      <label className="birthday-form-label">Describe what you want</label>
+                      <textarea
+                        required
+                        value={websiteDesc}
+                        onChange={(e) => setWebsiteDesc(e.target.value)}
+                        className="birthday-form-textarea"
+                        placeholder="Describe sections, colors, content..."
+                      />
+                      <div className={`birthday-word-counter ${getWordCount(websiteDesc) >= 100 ? "valid" : "invalid"}`}>
+                        {getWordCount(websiteDesc)} / 100 words min
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {winningPrize?.label === "Resume Review" && (
+                  <div className="birthday-form-group">
+                    <label className="birthday-form-label">Resume Link</label>
+                    <input
+                      type="url"
+                      required
+                      value={resumeLink}
+                      onChange={(e) => setResumeLink(e.target.value)}
+                      className="birthday-form-input"
+                      placeholder="https://drive.google.com/..."
+                    />
+                  </div>
+                )}
+
+                {winningPrize?.label === "Ui Audit" && (
+                  <div className="birthday-form-group">
+                    <label className="birthday-form-label">Link of project</label>
+                    <input
+                      type="url"
+                      required
+                      value={projectLink}
+                      onChange={(e) => setProjectLink(e.target.value)}
+                      className="birthday-form-input"
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={
+                    submittingClaim ||
+                    (winningPrize?.label === "Personal Website" && getWordCount(websiteDesc) < 100)
+                  }
+                  className="birthday-popup-btn"
+                  style={{ marginTop: "12px" }}
+                >
+                  {submittingClaim
+                    ? "Submitting..."
+                    : winningPrize?.label === "Coffee Chat"
+                    ? "Contact me"
+                    : winningPrize?.label === "PersonalOs Pro"
+                    ? "Go to PersonalOS"
+                    : "Claim Gift"}
+                </button>
+
+                {/* Removed old change gift button from bottom */}
+              </form>
+            )}
           </div>
 
         </div>
