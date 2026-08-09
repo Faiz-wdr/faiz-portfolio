@@ -97,6 +97,38 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResetDatabase = async () => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to completely reset the database? This will permanently delete all analytics events, spins, and claims. This action cannot be undone."
+    );
+    if (!isConfirmed) return;
+
+    const savedPassword = sessionStorage.getItem("adminPassword") || "";
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/admin/reset", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${savedPassword}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Database has been reset successfully!");
+        fetchStats(savedPassword);
+      } else {
+        alert(data.error || "Failed to reset database");
+      }
+    } catch (err) {
+      console.error("Failed to reset database:", err);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
@@ -234,12 +266,21 @@ export default function AdminDashboard() {
         <section className="admin-section">
           <div className="admin-section-header">
             <h2 className="admin-section-title">Overview Stats</h2>
-            <button
-              onClick={() => fetchStats(sessionStorage.getItem("adminPassword") || "")}
-              className="admin-link-btn"
-            >
-              Refresh Data
-            </button>
+            <div style={{ display: "flex", gap: "16px" }}>
+              <button
+                onClick={() => fetchStats(sessionStorage.getItem("adminPassword") || "")}
+                className="admin-link-btn"
+              >
+                Refresh Data
+              </button>
+              <button
+                onClick={handleResetDatabase}
+                className="admin-link-btn"
+                style={{ color: "#ba1a1a" }}
+              >
+                Reset Database
+              </button>
+            </div>
           </div>
 
           <div className="admin-overview-grid">

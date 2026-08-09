@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, query, where } from "firebase/firestore";
+import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, query, where, deleteDoc } from "firebase/firestore";
 
 // Define TypeScript interfaces for our lightweight tables
 export interface WheelSpin {
@@ -323,4 +323,26 @@ export async function addGiftClaim(claim: Omit<GiftClaim, "id" | "date" | "statu
   db.gift_claims.push(newClaim);
   await enqueueWrite(db);
   return newClaim;
+}
+
+export async function resetDb(): Promise<void> {
+  const collections = ["wheel_spins", "analytics_events", "gift_claims", "test_connection"];
+  for (const collName of collections) {
+    try {
+      const snapshot = await getDocs(collection(firestore, collName));
+      for (const docSnapshot of snapshot.docs) {
+        await deleteDoc(doc(firestore, collName, docSnapshot.id));
+      }
+    } catch (err) {
+      console.error(`[Database] Error clearing collection ${collName}:`, err);
+    }
+  }
+
+  // Clear local file DB fallback
+  const initialData: DatabaseSchema = {
+    wheel_spins: [],
+    analytics_events: [],
+    gift_claims: [],
+  };
+  await enqueueWrite(initialData);
 }
