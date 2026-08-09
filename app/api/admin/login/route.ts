@@ -5,7 +5,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { password } = body;
 
-    const adminPassword = process.env.ADMIN_PASSWORD || "faiz8086";
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminPassword) {
+      return NextResponse.json({ error: "Admin access is not configured" }, { status: 500 });
+    }
 
     if (password === adminPassword) {
       return NextResponse.json({ success: true, token: adminPassword });

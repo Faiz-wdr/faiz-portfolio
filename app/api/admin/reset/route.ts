@@ -7,7 +7,8 @@ function verifyAdmin(request: NextRequest): boolean {
     return false;
   }
   const token = authHeader.substring(7);
-  const adminPassword = process.env.ADMIN_PASSWORD || "faiz8086";
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) return false;
   return token === adminPassword;
 }
 
