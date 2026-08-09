@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readDb } from "@/lib/db";
+import { getWheelSpins, getAnalyticsEvents, getGiftClaims } from "@/lib/db";
 
 // Helper to verify admin password from authorization headers
 function verifyAdmin(request: NextRequest): boolean {
@@ -18,12 +18,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const db = readDb();
+    const totalEvents = await getAnalyticsEvents();
+    const totalSpins = await getWheelSpins();
+    const giftClaims = await getGiftClaims();
     const now = new Date();
-
-    // 1. Calculate general stats
-    const totalEvents = db.analytics_events;
-    const totalSpins = db.wheel_spins;
 
     // Visitors (events of type 'Visitor')
     const visitorEvents = totalEvents.filter(e => e.event === "Visitor");
@@ -71,7 +69,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    const giftClaims = db.gift_claims || [];
+    // Removed file fallback read
 
     // 3. Return payload
     return new NextResponse(
