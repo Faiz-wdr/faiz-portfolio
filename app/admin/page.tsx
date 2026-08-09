@@ -72,7 +72,7 @@ export default function AdminDashboard() {
   const fetchStats = async (authPassword: string) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/stats", {
+      const res = await fetch(`/api/admin/stats?t=${Date.now()}`, {
         headers: {
           Authorization: `Bearer ${authPassword}`,
         },

@@ -74,22 +74,31 @@ export async function GET(request: NextRequest) {
     const giftClaims = db.gift_claims || [];
 
     // 3. Return payload
-    return NextResponse.json({
-      success: true,
-      stats: {
-        visitors: visitorEvents.length,
-        uniqueVisitors: uniqueVisitorsCount,
-        wheelOpens: wheelOpensCount,
-        wheelSpins: wheelSpinsCount,
-        claimButtonClicks: claimButtonClicksCount,
-        claimsSubmitted: giftClaims.length,
-        todayVisitors: todayVisitorsCount,
-        thisMonthVisitors: thisMonthVisitorsCount,
-      },
-      giftSummaries,
-      wheelSpins: totalSpins.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-      giftClaims: giftClaims.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    });
+    return new NextResponse(
+      JSON.stringify({
+        success: true,
+        stats: {
+          visitors: visitorEvents.length,
+          uniqueVisitors: uniqueVisitorsCount,
+          wheelOpens: wheelOpensCount,
+          wheelSpins: wheelSpinsCount,
+          claimButtonClicks: claimButtonClicksCount,
+          claimsSubmitted: giftClaims.length,
+          todayVisitors: todayVisitorsCount,
+          thisMonthVisitors: thisMonthVisitorsCount,
+        },
+        giftSummaries,
+        wheelSpins: totalSpins.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+        giftClaims: giftClaims.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
 
   } catch (error) {
     console.error("Error fetching admin stats:", error);
