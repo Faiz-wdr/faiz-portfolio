@@ -1,5 +1,26 @@
 {
   "wheel_spins": [],
-  "analytics_events": [],
+  "analytics_events": [
+    {
+      "event": "Visitor",
+      "page": "/",
+      "sessionId": "sess_1786264272084_5atw41gn0",
+      "device": "Desktop",
+      "browser": "Chrome",
+      "country": "India",
+      "id": "evt_1786266108578_w5ix7blfp",
+      "timestamp": "2026-08-09T09:01:48.578Z"
+    },
+    {
+      "event": "Wheel Open",
+      "page": "/",
+      "sessionId": "sess_1786264272084_5atw41gn0",
+      "device": "Desktop",
+      "browser": "Chrome",
+      "country": "India",
+      "id": "evt_1786266109297_s9xyo0493",
+      "timestamp": "2026-08-09T09:01:49.297Z"
+    }
+  ],
   "gift_claims": []
 }
